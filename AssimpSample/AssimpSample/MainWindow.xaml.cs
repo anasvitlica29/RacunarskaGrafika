@@ -61,6 +61,7 @@ namespace AssimpSample
         /// <param name="args">The <see cref="SharpGL.SceneGraph.OpenGLEventArgs"/> instance containing the event data.</param>
         private void openGLControl_OpenGLDraw(object sender, OpenGLEventArgs args)
         {
+            m_world.Sirina = (int)window.ActualWidth;
             m_world.Draw(args.OpenGL);
         }
 

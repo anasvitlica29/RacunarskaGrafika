@@ -26,6 +26,8 @@ namespace AssimpSample
     {
         #region Atributi
 
+        private int sirina;
+
         /// <summary>
         ///	 Scena koja se prikazuje.
         /// </summary>
@@ -60,6 +62,12 @@ namespace AssimpSample
         #endregion Atributi
 
         #region Properties
+
+        public int Sirina
+        {
+            get { return sirina; }
+            set { sirina = value; }
+        }
 
         /// <summary>
         ///	 Scena koja se prikazuje.
@@ -271,14 +279,15 @@ namespace AssimpSample
             #endregion
 
             #region Slova
-            //gl.Viewport(m_width / 2, 0, m_width / 2, m_height / 2);     //donji desni ugao
-            //gl.Color(1.0f, 0.0f, 0.0f);     //Crvena boja
-            //gl.DrawText(10, 30, 1.0f, 0.0f, 0.0f, "Arial", 14, "Predmet : Racunarska grafika");
-            ////gl.DrawText(m_width - 300, 70, 1f, 0.0f, 0.0f, "Arial Bold", 14, "Sk. god: 2019/20");
-            ////gl.DrawText(m_width - 300, 50, 1f, 1f, 1f, "Arial Bold", 14, "Ime: Ana");
-            ////gl.DrawText(m_width - 300, 30, 1f, 1f, 1f, "Arial Bold", 14, "Prezme: Svitlica");
-            ////gl.DrawText(m_width - 300, 10, 1f, 1f, 1f, "Arial Bold", 14, "Sifra zad: 3.2");
-            ////gl.Viewport(0, 0, m_width, m_height);
+            gl.PushMatrix();
+            gl.Viewport(m_width / 2, 0, m_width / 2, m_height / 2);     //donji desni ugao
+            gl.DrawText3D("Arial Bold", 14, 0, 0, "");
+            gl.DrawText(sirina - 220, 100, 1.0f, 0.0f, 0.0f, "Arial Bold", 14, "Predmet: Racunarska grafika");
+            gl.DrawText(sirina - 220, 80, 1.0f, 0.0f, 0.0f, "Arial Bold", 14, "Sk.god: 2019/20.");
+            gl.DrawText(sirina - 220, 60, 1.0f, 0.0f, 0.0f, "Arial Bold", 14, "Ime: Ana");
+            gl.DrawText(sirina - 220, 40, 1.0f, 0.0f, 0.0f, "Arial Bold", 14, "Prezime: Svitlica");
+            gl.DrawText(sirina - 220, 20, 1.0f, 0.0f, 0.0f, "Arial Bold", 14, "Sifra zad: 3.2");
+            gl.PopMatrix();
             #endregion
 
             gl.PopMatrix();
