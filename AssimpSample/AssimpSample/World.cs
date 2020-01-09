@@ -11,6 +11,7 @@ using SharpGL;
 using System.Drawing;
 using System.Drawing.Imaging;
 using SharpGL.SceneGraph.Quadrics;
+using SharpGL.SceneGraph.Core;
 
 namespace AssimpSample
 {
@@ -186,13 +187,13 @@ namespace AssimpSample
             sphereLamp.CreateInContext(gl);
             sphereLamp.Radius = 3f;
             sphereLamp.Material = new SharpGL.SceneGraph.Assets.Material();
-            sphereLamp.Material.Emission = Color.LightYellow;
+            //sphereLamp.Material.Emission = Color.LightYellow;
 
             sijalica = new Sphere();
             sijalica.CreateInContext(gl);
             sijalica.Radius = 2f;
             sijalica.Material = new SharpGL.SceneGraph.Assets.Material();
-            sijalica.Material.Emission = Color.Red;
+            //sijalica.Material.Emission = Color.Red;
 
             // Crna pozadina i bela boja za crtanje
             gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -204,22 +205,20 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_CULL_FACE);
             gl.FrontFace(OpenGL.GL_CCW);
 
-            // Stavka 1 - Uključiti color tracking mehanizam i podesiti da se pozivom metode glColor 
-            // definiše ambijentalna i difuzna komponenta materijala.
-            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
-            gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);
-
+            
             // Stavka 3 - Teksture
             // Teksture se primenjuju sa parametrom decal
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_DECAL);
-            foreach (uint textureId in m_textures)
-            {
-                gl.BindTexture(OpenGL.GL_TEXTURE_2D, textureId);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
-            }
 
             //Ucitaj slike i kreiraj teksture
+            gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR_MIPMAP_LINEAR);  // Linear mipmap Filtering
+            gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR_MIPMAP_LINEAR);  // Linear mipmap Filtering
+            gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_REPEAT);
+            gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT);
+
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_REPLACE);
+
             gl.GenTextures(m_textureCount, m_textures);
             for (int i = 0; i < m_textureCount; ++i)
             {
@@ -236,17 +235,12 @@ namespace AssimpSample
                                                       System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
                 gl.Build2DMipmaps(OpenGL.GL_TEXTURE_2D, (int)OpenGL.GL_RGBA8, image.Width, image.Height, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, imageData.Scan0);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR_MIPMAP_LINEAR);  // Linear mipmap Filtering
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR_MIPMAP_LINEAR);  // Linear mipmap Filtering
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_REPEAT);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT);
-
-                //nacin spajanja sa podlogom
-                gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_DECAL);
-                gl.Enable(OpenGL.GL_TEXTURE_2D);
+                
                 image.UnlockBits(imageData);
                 image.Dispose();
             }
+
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
 
             m_scene.LoadScene();    //Tabla
             m_scene.Initialize();
@@ -256,25 +250,29 @@ namespace AssimpSample
 
         private void SetupLighting(OpenGL gl)
         {
+            // Stavka 1 - Uključiti color tracking mehanizam i podesiti da se pozivom metode glColor 
+            // definiše ambijentalna i difuzna komponenta materijala.
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+            gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);
+            
+
             ////Tackasti izvor svetlozute boje na centru plafona
             float[] light0pos = new float[] { 15.0f, 90.0f - 5.0f, 75.0f, 1.0f };
-            float[] light0ambient = new float[] { 0.7f, 0.6f, 0.0f, 1.0f };
+            float[] light0ambient = new float[] { 0.4f, 0.3f, 0.0f, 1f };
             float[] light0diffuse = new float[] { 0.7f, 0.6f, 0.0f, 1.0f };
-            float[] light0specular = new float[] { 0.7f, 0.7f, 0.0f, 1.0f };
+            float[] light0specular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
 
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
             //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);
 
-            
 
             //Reflektor
-            float[] light1pos = new float[] { 0.0f, 50.0f, 0.0f, 1.0f };
+            float[] light1pos = new float[] { m_spotPosition1[0], m_spotPosition1[1], m_spotPosition1[2], 1.0f };
             float[] light1ambient = new float[] { 1.0f, 0.0f, 0.0f, 1.0f };
             float[] light1diffuse = new float[] { 1.0f, 0.0f, 0.0f, 1.0f };
-            float[] light1specular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
             float[] smer = new float[] { 0.0f, -1.0f, 0.0f };       //gleda na dole
 
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, light1pos);
@@ -309,6 +307,17 @@ namespace AssimpSample
                        0, 0, 0, 
                        0, 1, 0);
 
+            #region Tackasto osvetljenje
+            gl.PushMatrix();
+            float[] pos = new float[] { 0.0f, 90.0f, 90.0f, 1.0f };
+            gl.Color(0.4f, 0.3f, 0.0f);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, pos);
+            gl.Translate(pos[0], pos[1], pos[2]);
+            sphereLamp.Material.Bind(gl);
+            sphereLamp.Render(gl, RenderMode.Render);
+            gl.PopMatrix();
+            #endregion
+
             #region Koordinatni pocetak
             gl.PushMatrix();
             gl.PointSize(5.0f);
@@ -320,15 +329,14 @@ namespace AssimpSample
             #endregion
 
             #region Pod
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
-            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
-
             gl.PushMatrix();
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Floor]);
             //gl.MatrixMode(OpenGL.GL_TEXTURE);
             //gl.LoadIdentity();
             //gl.Scale(0.5f, 0.5f, 0.0f);
             gl.Begin(OpenGL.GL_QUADS);
+                gl.Color(1.0f, 1.0f, 1.0f);
                 gl.Normal(0f, 1f, 0f);
                 gl.TexCoord(1f, 1f);
                 gl.Vertex(-60.0f, -60.0f, 0.0f);
@@ -340,14 +348,16 @@ namespace AssimpSample
                 gl.Vertex(90.0f, -60.0f, 0.0f);
             gl.End();
             //gl.MatrixMode(OpenGL.GL_MODELVIEW);
+
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
 
             #region Zidovi
             gl.PushMatrix();
-
-            for (float z = 60.0f; z >= 0.0f; z -= 10.0f)
-            {
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
+            //for (float z = 60.0f; z >= 0.0f; z -= 10.0f)
+            //{
                 gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Brick]);
 
                 gl.Begin(OpenGL.GL_QUADS);
@@ -401,8 +411,8 @@ namespace AssimpSample
                 gl.TexCoord(0.0f, 1.0f);
                 gl.Vertex(-60.0f, 90.0f, 0.0f);
                 gl.End();
-            }
-
+            //}
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
 
@@ -420,22 +430,24 @@ namespace AssimpSample
 
             #region Postolje
             gl.PushMatrix();
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.WhiteWood]);
             gl.Scale(20.0f, 30.0f, 2f);
             gl.Translate(0.0f, 0.5f, 1.0f);
             Cube postolje = new Cube();
             postolje.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
 
             #region Pikado tabla
             gl.PushMatrix();
-
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
             gl.Scale(0.7f, 0.8f, 1.0f);
             gl.Translate(0.0f, 15.0f, 5.0f);
             m_scene.Draw();
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
 
@@ -452,6 +464,7 @@ namespace AssimpSample
 
             gl.Translate(5.0f, 0.0f, 0.0f);
             m_scene2.Draw();
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
             
@@ -467,23 +480,13 @@ namespace AssimpSample
             gl.PopMatrix();
             #endregion
 
-            #region Sijalica
-            //Nacrtaj malu sferu (sijalica)
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, m_spotPosition);
-            gl.PushMatrix();
-            
-            gl.Translate(m_spotPosition[0], m_spotPosition[1] - 5.0f, m_spotPosition[2]);
-            sphereLamp.Material.Bind(gl);
-            sphereLamp.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
-            gl.PopMatrix();
-            #endregion
-
             #region Reflektor
-            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, m_spotPosition1);
-            gl.PushMatrix();
-            gl.Translate(0.0f, 60.0f, 5.0f);
+            float[] pozicija = { 0.0f, 60.0f, 5.0f };
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, pozicija);
+            gl.Translate(pozicija[0], pozicija[1], pozicija[2]);
+            //sijalica.Material.Emission = Color.Red;
             sijalica.Material.Bind(gl);
-            sijalica.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
+            sijalica.Render(gl, RenderMode.Render);
             gl.PopMatrix();
             #endregion
 
