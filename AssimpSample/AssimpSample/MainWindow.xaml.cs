@@ -1,21 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using SharpGL.SceneGraph;
-using SharpGL;
-using Microsoft.Win32;
-
 
 namespace AssimpSample
 {
@@ -30,7 +19,7 @@ namespace AssimpSample
         ///	 Instanca OpenGL "sveta" - klase koja je zaduzena za iscrtavanje koriscenjem OpenGL-a.
         /// </summary>
         World m_world = null;
-
+        
         #endregion Atributi
 
         #region Konstruktori
@@ -87,35 +76,125 @@ namespace AssimpSample
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            switch (e.Key)
+            //Stavka 11: U toku animacije onemoguciti interakciju sa korisnikom
+            if (m_world.AnimationInProgress)
             {
-                case Key.F10: this.Close(); break;
-                case Key.W: m_world.RotationX -= 5.0f; break;
-                case Key.S: m_world.RotationX += 5.0f; break;
-                case Key.A: m_world.RotationY -= 5.0f; break;
-                case Key.D: m_world.RotationY += 5.0f; break;
-                case Key.Add: m_world.SceneDistance -= 100.0f; break;
-                case Key.Subtract: m_world.SceneDistance += 100.0f; break;
-                //case Key.Escape: break;
-                    //case Key.F2:
-                    //    OpenFileDialog opfModel = new OpenFileDialog();
-                    //    bool result = (bool) opfModel.ShowDialog();
-                    //    if (result)
-                    //    {
+                return;
+            }
+            else
+            {
+                switch (e.Key)
+                {
+                    case Key.F5: this.Close(); break;
+                    case Key.T: m_world.RotationX -= 5.0f; break;
+                    case Key.G: m_world.RotationX += 5.0f; break;
+                    case Key.F: m_world.RotationY -= 5.0f; break;
+                    case Key.H: m_world.RotationY += 5.0f; break;
+                    case Key.Add: m_world.SceneDistance -= 50.0f; break;
+                    case Key.Subtract: m_world.SceneDistance += 50.0f; break;
+                    case Key.C:
+                        m_world.Animation();
+                        this.okBtn.IsEnabled = false;
+                        this.scaleDarts_txt.IsEnabled = false;
+                        this.translateY.IsEnabled = false;
+                        this.txtRed.IsEnabled = false;
+                        this.txtGreen.IsEnabled = false;
+                        this.txtBlue.IsEnabled = false;
+                        break;
 
-                    //        try
-                    //        {
-                    //            World newWorld = new World(Directory.GetParent(opfModel.FileName).ToString(), Path.GetFileName(opfModel.FileName), (int)openGLControl.Width, (int)openGLControl.Height, openGLControl.OpenGL);
-                    //            m_world.Dispose();
-                    //            m_world = newWorld;
-                    //            m_world.Initialize(openGLControl.OpenGL);
-                    //        }
-                    //        catch (Exception exp)
-                    //        {
-                    //            MessageBox.Show("Neuspesno kreirana instanca OpenGL sveta:\n" + exp.Message, "GRESKA", MessageBoxButton.OK );
-                    //        }
-                    //    }
-                    //    break;
+                    //Dodatno
+                    case Key.W: m_world.TranslateY -= 20.0f; break;
+                    case Key.S: m_world.TranslateY += 20.0f; break;
+                    case Key.A: m_world.TranslateX += 20.0f; break;
+                    case Key.D: m_world.TranslateX -= 20.0f; break;
+                    case Key.Z: m_world.SceneDistance += 20.0f; break;
+                    case Key.X: m_world.SceneDistance -= 20.0f; break;
+
+
+                        //case Key.Escape: break;
+                        //case Key.F2:
+                        //    OpenFileDialog opfModel = new OpenFileDialog();
+                        //    bool result = (bool) opfModel.ShowDialog();
+                        //    if (result)
+                        //    {
+
+                        //        try
+                        //        {
+                        //            World newWorld = new World(Directory.GetParent(opfModel.FileName).ToString(), Path.GetFileName(opfModel.FileName), (int)openGLControl.Width, (int)openGLControl.Height, openGLControl.OpenGL);
+                        //            m_world.Dispose();
+                        //            m_world = newWorld;
+                        //            m_world.Initialize(openGLControl.OpenGL);
+                        //        }
+                        //        catch (Exception exp)
+                        //        {
+                        //            MessageBox.Show("Neuspesno kreirana instanca OpenGL sveta:\n" + exp.Message, "GRESKA", MessageBoxButton.OK );
+                        //        }
+                        //    }
+                        //    break;
+                }
+            }
+        }
+        
+
+        private void OkBtn_Click(object sender, RoutedEventArgs e)
+        {
+            //Reflektor ambijentalno
+            try
+            {
+                float red = float.Parse(this.txtRed.Text);
+                if (red < 0.0f || red > 1.0f )
+                {
+                    MessageBox.Show("Value RED must be a number between 0.0 and 1.0!");
+                }
+                else
+                {
+                    m_world.ReflectorAmbientRed = red;
+                }
+
+                float green = float.Parse(this.txtGreen.Text);
+                if (green < 0.0f || green > 1.0f)
+                {
+                    MessageBox.Show("Value GREEN must be a number between 0.0 and 1.0!");
+                }
+                else
+                {
+                    m_world.ReflectorAmbientGreen = green;
+                }
+
+                float blue = float.Parse(this.txtBlue.Text);
+                if (blue < 0.0f || blue > 1.0f)
+                {
+                    MessageBox.Show("Value BLUE must be a number between 0.0 and 1.0!");
+                }
+                else
+                {
+                    m_world.ReflectorAmbientBlue = blue;
+                }
+
+            }
+            catch
+            {
+                MessageBox.Show("Value of RED, GREEN and BLUE must be a number between 0.0 and 1.0!");
+            }
+
+            //Transliranje po Y
+            try
+            {
+                m_world.TranslateY = float.Parse(this.translateY.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Translation must be a number!");
+            }
+
+            //Skaliranje strelica
+            try
+            {
+                m_world.ScaleDarts = double.Parse(this.scaleDarts_txt.Text);
+            }
+            catch
+            {
+                MessageBox.Show("Scaling must be a number!");
             }
         }
     }

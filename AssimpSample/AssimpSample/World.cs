@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using SharpGL.SceneGraph.Quadrics;
 using SharpGL.SceneGraph.Core;
+using System.Windows.Threading;
 
 namespace AssimpSample
 {
@@ -77,9 +78,105 @@ namespace AssimpSample
 
         private Sphere sijalica;
 
+        //Stavka 7
+        private float translateY = 0.0f;
+        private float translateX = 0.0f;
+        private double scaleDarts = 1;
+        private float reflectorAmbientRed = 1.0f;
+        private float reflectorAmbientGreen = 0.0f;
+        private float reflectorAmbientBlue = 0.0f;
+
+        //Stavka 11: Animacija
+        private bool animationInProgress = false;
+        private DispatcherTimer timer1;
+        private DispatcherTimer timer2;
+        private DispatcherTimer timer3;
+        private DispatcherTimer timer4;
+        private DispatcherTimer timer5;
+
+        private float m_throwDart1_x = 0.0f;
+        private float m_throwDart1_y = 0.0f;
+        private float m_throwDart1_z = 100.0f;
+
+        private float m_throwDart2_x = 0.0f;
+        private float m_throwDart2_y = 0.0f;
+        private float m_throwDart2_z = 100.0f;
+
+        private float m_throwDart3_x = 0.0f;
+        private float m_throwDart3_y = 0.0f;
+        private float m_throwDart3_z = 100.0f;
+
+        private double m_dartboardScale = 1;
+
         #endregion Atributi
 
         #region Properties
+
+       
+        public float ReflectorAmbientRed
+        {
+            get
+            {
+                return this.reflectorAmbientRed;
+            }
+            set
+            {
+                this.reflectorAmbientRed = value;
+            }
+        }
+
+        public float ReflectorAmbientGreen {
+            get
+            {
+                return this.reflectorAmbientGreen;
+            }
+            set
+            {
+                this.reflectorAmbientGreen = value;
+            }
+        }
+
+        public float ReflectorAmbientBlue
+        {
+            get
+            {
+                return this.reflectorAmbientBlue;
+            }
+            set
+            {
+                this.reflectorAmbientBlue = value;
+            }
+        }
+
+        public double ScaleDarts
+        {
+            get { return this.scaleDarts; }
+            set { this.scaleDarts = value; }
+        }
+
+        public float TranslateY
+        {
+            get
+            {
+                return this.translateY;
+            }
+            set
+            {
+                this.translateY = value;
+            }
+        }
+
+        public float TranslateX
+        {
+            get
+            {
+                return this.translateX;
+            }
+            set
+            {
+                this.translateX = value;
+            }
+        }
 
         public int Sirina
         {
@@ -108,7 +205,17 @@ namespace AssimpSample
         public float RotationX
         {
             get { return m_xRotation; }
-            set { m_xRotation = value; }
+            set {
+                m_xRotation = value;
+                if (m_xRotation >= 90)
+                {
+                    m_xRotation = 90;
+                }
+                if (m_xRotation <= 0)
+                {
+                    m_xRotation = 0;
+                }
+            }
         }
 
         /// <summary>
@@ -117,7 +224,10 @@ namespace AssimpSample
         public float RotationY
         {
             get { return m_yRotation; }
-            set { m_yRotation = value; }
+            set {
+                m_yRotation = value;
+                //if (m_yRotation )
+            }
         }
 
         /// <summary>
@@ -145,6 +255,18 @@ namespace AssimpSample
         {
             get { return m_height; }
             set { m_height = value; }
+        }
+
+        public bool AnimationInProgress
+        {
+            get
+            {
+                return this.animationInProgress;
+            }
+            set
+            {
+                this.animationInProgress = value;
+            }
         }
 
         #endregion Properties
@@ -299,7 +421,7 @@ namespace AssimpSample
 
             // Sacuvaj stanje ModelView matrice i primeni transformacije
             gl.PushMatrix();
-            gl.Translate(0.0f, 0.0f, -m_sceneDistance);     //Udalji se od scene po z osi
+            gl.Translate(this.translateX, this.translateY, -m_sceneDistance);     //Udalji se od scene po z osi
             gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
             gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
 
@@ -444,30 +566,45 @@ namespace AssimpSample
             gl.PushMatrix();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
-            gl.Scale(0.7f, 0.8f, 1.0f);
-            gl.Translate(0.0f, 15.0f, 5.0f);
+            gl.Scale(0.5f * this.m_dartboardScale, 0.6f * this.m_dartboardScale, 1.0f);
+            gl.Translate(0.0f, 15.0f, 4.0f);
             m_scene.Draw();
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
 
             #region Strelice
+            //Prva
             gl.PushMatrix();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
-
-            gl.Translate(0.0f, 5.0f, 5.0f);
+            gl.Scale(scaleDarts, scaleDarts, scaleDarts);
+            gl.Translate(0.0f + this.m_throwDart1_x, 0.0f + this.m_throwDart1_y, 5.0f + this.m_throwDart1_z);
             m_scene2.Draw();
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
+            gl.PopMatrix();
 
-            gl.Translate(5.0f, 0.0f, 0.0f);
+            //Druga
+            gl.PushMatrix();
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
+            gl.Scale(scaleDarts, scaleDarts, scaleDarts);
+            gl.Translate(0.0f + this.m_throwDart2_x, 5.0f + this.m_throwDart2_y, 5.0f + this.m_throwDart2_z);
             m_scene2.Draw();
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
+            gl.PopMatrix();
 
-            gl.Translate(5.0f, 0.0f, 0.0f);
+            //Treca
+            gl.PushMatrix();
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
+            gl.Scale(scaleDarts, scaleDarts, scaleDarts);
+            gl.Translate(0.0f, 9.0f, 5.0f + this.m_throwDart3_z);
             m_scene2.Draw();
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
             #endregion
-            
+
             #region Slova
             gl.PushMatrix();
             gl.Viewport(m_width / 2, 0, m_width / 2, m_height / 2);     //donji desni ugao
@@ -483,6 +620,10 @@ namespace AssimpSample
             #region Reflektor
             float[] pozicija = { 0.0f, 60.0f, 5.0f };
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, pozicija);
+
+            float[] light1ambient = new float[] { ReflectorAmbientRed, ReflectorAmbientGreen, ReflectorAmbientBlue, 1.0f };
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_AMBIENT, light1ambient);
+
             gl.Translate(pozicija[0], pozicija[1], pozicija[2]);
             //sijalica.Material.Emission = Color.Red;
             sijalica.Material.Bind(gl);
@@ -495,6 +636,143 @@ namespace AssimpSample
             gl.Flush();
         }
 
+        #region Animacija
+        public void Animation()
+        {
+            this.animationInProgress = true;
+            timer1 = new DispatcherTimer();
+            timer1.Interval = TimeSpan.FromMilliseconds(250);
+            timer1.Tick += new EventHandler(ThrowDarts1);
+            timer1.Start();
+        }
+
+        public void ThrowDarts1(object sender, EventArgs e)
+        {
+            if (m_throwDart1_z > 0)         //priblizava se tabli
+            {
+                m_throwDart1_z -= 10f;
+                if (m_throwDart1_x > -15.0)
+                {
+                    m_throwDart1_x -= 1.5f;
+                    if(m_throwDart1_y > -20.0 )
+                    {
+                        m_throwDart1_y -= 1.0f;
+                    }
+                }
+            }
+            else
+            {
+                Animation2();
+                timer1.Stop();
+
+            }
+        }
+
+        public void Animation2()
+        {
+            timer2 = new DispatcherTimer();
+            timer2.Interval = TimeSpan.FromMilliseconds(250);
+            timer2.Tick += new EventHandler(ThrowDarts2);
+            timer2.Start();
+        }
+
+        public void ThrowDarts2(object sender, EventArgs e)
+        {
+            if (m_throwDart2_z > 0)         //priblizava se tabli
+            {
+                m_throwDart2_z -= 10f;
+                if (m_throwDart2_x < 15.0)
+                {
+                    m_throwDart2_x += 1.5f;
+                    if (m_throwDart2_y > -20.0)
+                    {
+                        m_throwDart2_y -= 1.0f;
+                    }
+                }
+            }
+            else
+            {
+                Animation3();
+                timer2.Stop();
+
+            }
+        }
+
+        public void Animation3()
+        {
+            timer3 = new DispatcherTimer();
+            timer3.Interval = TimeSpan.FromMilliseconds(250);
+            timer3.Tick += new EventHandler(ScaleDartboard);
+            timer3.Start();
+        }
+
+        public void ScaleDartboard(object sender, EventArgs e)
+        {
+            if (m_dartboardScale < 3)     
+            {
+                m_dartboardScale += 1;
+            }
+            else
+            {
+                Animation4();
+                timer3.Stop();
+
+            }
+        }
+
+        public void Animation4()
+        {
+            timer4 = new DispatcherTimer();
+            timer4.Interval = TimeSpan.FromMilliseconds(250);
+            timer4.Tick += new EventHandler(ThrowDarts3);
+            timer4.Start();
+        }
+
+        public void ThrowDarts3(object sender, EventArgs e)
+        {
+            if (m_throwDart3_z > 0)         //priblizava se tabli
+            {
+                m_throwDart3_z -= 10f;
+                if (m_throwDart3_y > 0.0)
+                {
+                    m_throwDart3_y -= 1.5f;
+                    //if (m_throwDart3_y > -20.0)
+                    //{
+                    //    m_throwDart3_y -= 1.0f;
+                    //}
+                }
+            }
+            else
+            {
+                Animation5();
+                timer4.Stop();
+
+            }
+        }
+
+        public void Animation5()
+        {
+            timer5 = new DispatcherTimer();
+            timer5.Interval = TimeSpan.FromMilliseconds(250);
+            timer5.Tick += new EventHandler(ScaleDartboard1);
+            timer5.Start();
+        }
+
+        public void ScaleDartboard1(object sender, EventArgs e)
+        {
+            if (m_dartboardScale > 1)
+            {
+                m_dartboardScale -= 1;
+            }
+            else
+            {
+                animationInProgress = false;
+                timer5.Stop();
+
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Podesava viewport i projekciju za OpenGL kontrolu.

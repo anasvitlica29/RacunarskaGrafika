@@ -3,13 +3,27 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SharpGL WPF Application" Height="350" Width="525" Name="window"
         xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF" KeyDown="Window_KeyDown">
-    <Grid>
-        
-        <!-- The OpenGL control provides a OpenGL drawing surface. -->
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="3">
+            <Label>Translate Y: </Label>
+            <TextBox Width="50" Name="translateY" Text="0.0"></TextBox>
+            <Label>Reflector ambient: </Label>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Background="IndianRed" Width="25" Name="txtRed" Text="1.0"></TextBox>
+                <TextBox Background="LightGreen" Width="25" Name="txtGreen" Text="0.0"></TextBox>
+                <TextBox Background="SkyBlue" Width="25" Name="txtBlue" Text="0.0"></TextBox>
+            </StackPanel>
+            <Label>Darts scale: </Label>
+            <TextBox Width="50" Name="scaleDarts_txt" Text="1.0"></TextBox>
+
+            <Button Margin="5 0 5 0" Padding="5 0 5 0" Name="okBtn" Click="OkBtn_Click">OK</Button>
+        </StackPanel>
+        <!-- The OpenGL control1 provides a OpenGL drawing surface. -->
         <sharpGL:OpenGLControl 
+            DockPanel.Dock="Bottom"
             Name="openGLControl" OpenGLDraw="openGLControl_OpenGLDraw" 
             OpenGLInitialized="openGLControl_OpenGLInitialized" Resized="openGLControl_Resized"
             DrawFPS="True" RenderContextType="FBO" FrameRate="10"/>
         
-    </Grid>
+    </DockPanel>
 </Window>
