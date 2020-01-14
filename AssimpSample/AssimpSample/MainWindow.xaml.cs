@@ -83,6 +83,13 @@ namespace AssimpSample
             }
             else
             {
+                this.okBtn.IsEnabled = true;
+                this.scaleDarts_txt.IsEnabled = true;
+                this.translateY.IsEnabled = true;
+                this.txtRed.IsEnabled = true;
+                this.txtGreen.IsEnabled = true;
+                this.txtBlue.IsEnabled = true;
+
                 switch (e.Key)
                 {
                     case Key.F5: this.Close(); break;
@@ -100,6 +107,9 @@ namespace AssimpSample
                         this.txtRed.IsEnabled = false;
                         this.txtGreen.IsEnabled = false;
                         this.txtBlue.IsEnabled = false;
+                        break;
+                    case Key.V:
+                        m_world.Reset();
                         break;
 
                     //Dodatno

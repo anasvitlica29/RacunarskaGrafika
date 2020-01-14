@@ -302,6 +302,10 @@ namespace AssimpSample
         /// </summary>
         public void Initialize(OpenGL gl)
         {
+            // Stavka 1
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+            gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);
+
             // Stavka 2 - Tackasti izvor zute boje
             SetupLighting(gl);
             
@@ -338,9 +342,7 @@ namespace AssimpSample
             gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR_MIPMAP_LINEAR);  // Linear mipmap Filtering
             gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_REPEAT);
             gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT);
-
-            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_REPLACE);
-
+            
             gl.GenTextures(m_textureCount, m_textures);
             for (int i = 0; i < m_textureCount; ++i)
             {
@@ -372,36 +374,30 @@ namespace AssimpSample
 
         private void SetupLighting(OpenGL gl)
         {
-            // Stavka 1 - Uključiti color tracking mehanizam i podesiti da se pozivom metode glColor 
-            // definiše ambijentalna i difuzna komponenta materijala.
-            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
-            gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);
-            
-
-            ////Tackasti izvor svetlozute boje na centru plafona
-            float[] light0pos = new float[] { 15.0f, 90.0f - 5.0f, 75.0f, 1.0f };
+            //Tackasti izvor svetlozute boje na centru plafona
+            float[] light0pos = new float[] { 15.0f, 85.0f, 75.0f, 1.0f };
             float[] light0ambient = new float[] { 0.4f, 0.3f, 0.0f, 1f };
             float[] light0diffuse = new float[] { 0.7f, 0.6f, 0.0f, 1.0f };
             float[] light0specular = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
 
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, light0pos);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);      //Tackasto
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light0ambient);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light0diffuse);
-            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
-
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light0specular);
 
             //Reflektor
             float[] light1pos = new float[] { m_spotPosition1[0], m_spotPosition1[1], m_spotPosition1[2], 1.0f };
             float[] light1ambient = new float[] { 1.0f, 0.0f, 0.0f, 1.0f };
             float[] light1diffuse = new float[] { 1.0f, 0.0f, 0.0f, 1.0f };
-            float[] smer = new float[] { 0.0f, -1.0f, 0.0f };       //gleda na dole
-
+            float[] smer = new float[] { 0.0f, 1.0f, 0.0f };       //gleda na dole
+            
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, light1pos);
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_AMBIENT, light1ambient);
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_DIFFUSE, light1diffuse);
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPOT_CUTOFF, 30.0f);
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPOT_DIRECTION, smer);
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPECULAR, light0specular);
 
             gl.Enable(OpenGL.GL_LIGHTING);
             gl.Enable(OpenGL.GL_LIGHT0);
@@ -453,10 +449,15 @@ namespace AssimpSample
             #region Pod
             gl.PushMatrix();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
+           
+            //Stavka 5
+            gl.MatrixMode(OpenGL.GL_TEXTURE);
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Floor]);
-            //gl.MatrixMode(OpenGL.GL_TEXTURE);
-            //gl.LoadIdentity();
-            //gl.Scale(0.5f, 0.5f, 0.0f);
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
+            gl.LoadIdentity();
+            gl.Scale(5, 5, 5);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+
             gl.Begin(OpenGL.GL_QUADS);
                 gl.Color(1.0f, 1.0f, 1.0f);
                 gl.Normal(0f, 1f, 0f);
@@ -469,7 +470,12 @@ namespace AssimpSample
                 gl.TexCoord(1f, 0f);
                 gl.Vertex(90.0f, -60.0f, 0.0f);
             gl.End();
-            //gl.MatrixMode(OpenGL.GL_MODELVIEW);
+
+            gl.MatrixMode(OpenGL.GL_TEXTURE);
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
+            gl.LoadIdentity();
+            gl.Scale(1, 1, 1);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
@@ -553,9 +559,9 @@ namespace AssimpSample
             #region Postolje
             gl.PushMatrix();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
-            gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.WhiteWood]);
+            gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Floor]);
             gl.Scale(20.0f, 30.0f, 2f);
-            gl.Translate(0.0f, 0.5f, 1.0f);
+            gl.Translate(0.0f, 0.0f, 1.0f);
             Cube postolje = new Cube();
             postolje.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
             gl.Disable(OpenGL.GL_TEXTURE_2D);
@@ -567,7 +573,8 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
             gl.Scale(0.5f * this.m_dartboardScale, 0.6f * this.m_dartboardScale, 1.0f);
-            gl.Translate(0.0f, 15.0f, 4.0f);
+            //gl.Translate(0.0f, 15.0f, 4.0f);
+            gl.Translate(0.0f, 0.0f, 4.0f);
             m_scene.Draw();
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
@@ -579,7 +586,7 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
             gl.Scale(scaleDarts, scaleDarts, scaleDarts);
-            gl.Translate(0.0f + this.m_throwDart1_x, 0.0f + this.m_throwDart1_y, 5.0f + this.m_throwDart1_z);
+            gl.Translate(0.0f + this.m_throwDart1_x, 5.0f + this.m_throwDart1_y, 5.0f + this.m_throwDart1_z);
             m_scene2.Draw();
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
@@ -589,7 +596,7 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
             gl.Scale(scaleDarts, scaleDarts, scaleDarts);
-            gl.Translate(0.0f + this.m_throwDart2_x, 5.0f + this.m_throwDart2_y, 5.0f + this.m_throwDart2_z);
+            gl.Translate(0.0f + this.m_throwDart2_x, 10.0f + this.m_throwDart2_y, 5.0f + this.m_throwDart2_z);
             m_scene2.Draw();
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
@@ -599,7 +606,7 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
             gl.Scale(scaleDarts, scaleDarts, scaleDarts);
-            gl.Translate(0.0f, 9.0f, 5.0f + this.m_throwDart3_z);
+            gl.Translate(0.0f, 0.0f, 5.0f + this.m_throwDart3_z);
             m_scene2.Draw();
             gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.PopMatrix();
@@ -618,13 +625,15 @@ namespace AssimpSample
             #endregion
 
             #region Reflektor
-            float[] pozicija = { 0.0f, 60.0f, 5.0f };
-            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, pozicija);
-
+            float[] light1pos = new float[] { m_spotPosition1[0], m_spotPosition1[1], m_spotPosition1[2], 1.0f };
+            float[] light1diffuse = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
             float[] light1ambient = new float[] { ReflectorAmbientRed, ReflectorAmbientGreen, ReflectorAmbientBlue, 1.0f };
-            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_AMBIENT, light1ambient);
 
-            gl.Translate(pozicija[0], pozicija[1], pozicija[2]);
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, light1pos);
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_AMBIENT, light1ambient);
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_DIFFUSE, light1diffuse);
+            
+            gl.Translate(m_spotPosition1[0], m_spotPosition1[1], m_spotPosition1[2]);
             //sijalica.Material.Emission = Color.Red;
             sijalica.Material.Bind(gl);
             sijalica.Render(gl, RenderMode.Render);
@@ -733,13 +742,9 @@ namespace AssimpSample
             if (m_throwDart3_z > 0)         //priblizava se tabli
             {
                 m_throwDart3_z -= 10f;
-                if (m_throwDart3_y > 0.0)
+                if (m_throwDart3_y > -100.0)
                 {
-                    m_throwDart3_y -= 1.5f;
-                    //if (m_throwDart3_y > -20.0)
-                    //{
-                    //    m_throwDart3_y -= 1.0f;
-                    //}
+                    m_throwDart3_y -= 10.0f;
                 }
             }
             else
@@ -772,6 +777,21 @@ namespace AssimpSample
             }
         }
 
+        public void Reset()
+        {
+            AnimationInProgress = false;
+            m_throwDart1_x = 0.0f;
+            m_throwDart1_y = 0.0f;
+            m_throwDart1_z = 100.0f;
+            m_throwDart2_x = 0.0f;
+            m_throwDart2_y = 0.0f;
+            m_throwDart2_z = 100.0f;
+            m_throwDart3_x = 0.0f;
+            m_throwDart3_y = 0.0f;
+            m_throwDart3_z = 100.0f;
+            m_dartboardScale = 1;
+
+    }
         #endregion
 
         /// <summary>
